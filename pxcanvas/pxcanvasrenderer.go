@@ -68,5 +68,4 @@ func (renderer *PxCanvasRenderer) LayoutBorder(size fyne.Size) {
 	bottom := renderer.canvasBorder[3]
 	bottom.Position1 = fyne.NewPos(offset.X, offset.Y+imgHeight)
 	bottom.Position2 = fyne.NewPos(offset.X+imgWidth, offset.Y+imgHeight)
-
 }

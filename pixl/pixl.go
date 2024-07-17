@@ -26,7 +26,7 @@ func main() {
 		CanvasOffset: fyne.NewPos(0, 0),
 		PxRows:       10,
 		PxCols:       10,
-		PxSize:       30, // size of each pixel square
+		PxSize:       20, // size of each pixel square
 	}
 	pixlCanvas := pxcanvas.NewPxCanvas(&state, pixlCanvasConfig)
 

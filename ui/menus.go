@@ -2,6 +2,8 @@ package ui
 
 import (
 	"errors"
+	"image/png"
+	"os"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -55,10 +57,60 @@ func BuildNewMenu(app *AppInit) *fyne.MenuItem {
 	})
 }
 
+func SaveFileDialog(app *AppInit) {
+	dialog.ShowFileSave(func(uri fyne.URIWriteCloser, err error) {
+		if uri == nil {
+			return
+		} else {
+			error := png.Encode(uri, app.PixlCanvas.PixelData)
+			if error != nil {
+				dialog.ShowError(err, app.PixlWindow)
+				return
+			}
+			app.State.SetFilePath(uri.URI().Path())
+		}
+
+	}, app.PixlWindow)
+}
+func BuildSaveAsMenu(app *AppInit) *fyne.MenuItem {
+	return fyne.NewMenuItem("Save As...", func() {
+		SaveFileDialog(app)
+	})
+}
+func BuildSaveMenu(app *AppInit) *fyne.MenuItem {
+	return fyne.NewMenuItem("Save", func() {
+		if app.State.FilePath == "" {
+			SaveFileDialog(app)
+		} else {
+			// function to close the file once read. Called through defer below
+			tryclose := func(fh *os.File) {
+				err := fh.Close()
+				if err != nil {
+					dialog.ShowError(err, app.PixlWindow)
+				}
+			}
+			fh, err := os.Create(app.State.FilePath)
+			defer tryclose(fh)
+
+			if err != nil {
+				dialog.ShowError(err, app.PixlWindow)
+				return
+			}
+			err = png.Encode(fh, app.PixlCanvas.PixelData)
+			if err != nil {
+				dialog.ShowError(err, app.PixlWindow)
+				return
+			}
+		}
+	})
+}
+
 func BuildMenus(app *AppInit) *fyne.Menu {
 	return fyne.NewMenu(
 		"File",
 		BuildNewMenu(app),
+		BuildSaveMenu(app),
+		BuildSaveAsMenu(app),
 	)
 }
 

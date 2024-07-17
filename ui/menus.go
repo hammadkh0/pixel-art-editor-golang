@@ -2,8 +2,10 @@ package ui
 
 import (
 	"errors"
+	"image"
 	"image/png"
 	"os"
+	"pixel-art-editor-golang/util"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -105,10 +107,41 @@ func BuildSaveMenu(app *AppInit) *fyne.MenuItem {
 	})
 }
 
+func BuildOpenMenu(app *AppInit) *fyne.MenuItem {
+	return fyne.NewMenuItem("Open...", func() {
+		dialog.ShowFileOpen(func(uri fyne.URIReadCloser, e error) {
+			if uri == nil {
+				return
+			} else {
+				image, _, err := image.Decode(uri)
+				if err != nil {
+					dialog.ShowError(err, app.PixlWindow)
+					return
+				}
+				app.PixlCanvas.LoadImage(image)
+				app.State.SetFilePath(uri.URI().Path())
+
+				// populate each swatch with the color of the image
+				imgColors := util.GetImageColors(image)
+				i := 0
+				for c := range imgColors {
+					if i == len(app.Swatches) {
+						break
+					}
+					app.Swatches[i].SetColor(c)
+					i++
+				}
+			}
+
+		}, app.PixlWindow)
+	})
+}
+
 func BuildMenus(app *AppInit) *fyne.Menu {
 	return fyne.NewMenu(
 		"File",
 		BuildNewMenu(app),
+		BuildOpenMenu(app),
 		BuildSaveMenu(app),
 		BuildSaveAsMenu(app),
 	)
